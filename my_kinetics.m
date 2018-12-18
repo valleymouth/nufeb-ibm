@@ -37,12 +37,12 @@ numX = R.St.numX; % bacteria
 numStFull = R.St.numStFull; % all components
 Liq2Gas = R.St.Liq2Gas; % those from gas to liquid
 
-Glu_pos = strcmp(R.St.StNames(1:numStVLiq), 'Glu');
-AcH_pos = strcmp(R.St.StNames(1:numStVLiq), 'AcH');
-H2_pos = strcmp(R.St.StNames(1:numStVLiq), 'H2');
-% O2_pos = strcmp(R.St.StNames(1:numStVLiq), 'O2');
-% NH3_pos = strcmp(R.St.StNames(1:numStVLiq), 'NH3');
-% NO2_pos = strcmp(R.St.StNames(1:numStVLiq), 'NO2');
+% Glu_pos = strcmp(R.St.StNames(1:numStVLiq), 'Glu');
+% AcH_pos = strcmp(R.St.StNames(1:numStVLiq), 'AcH');
+% H2_pos = strcmp(R.St.StNames(1:numStVLiq), 'H2');
+O2_pos = strcmp(R.St.StNames(1:numStVLiq), 'O2');
+NH3_pos = strcmp(R.St.StNames(1:numStVLiq), 'NH3');
+NO2_pos = strcmp(R.St.StNames(1:numStVLiq), 'NO2');
 rv = R.pTh.react_v;
 
 bac_s = R.bac.bac_s;
@@ -114,30 +114,31 @@ for i=1:nT
                     MatrixMet = MatrixCat(:,k).*InvYield + MatrixAn(:,k); % assemble the metabolic matrix
                     
                     M = 1;
-%                     % compute the rates for each bacteria now
-%                     if ne(bac_Ks(ex(e),1),0)
-%                         M = M*spcM(NH3_pos,rv(NH3_pos))/(spcM(NH3_pos,rv(NH3_pos)) + bac_Ks(ex(e),1));
-% %                         use the proper concentration, corresponding to the proper state
-%                     end
-%                     if ne(bac_Ks(ex(e),2),0)
-%                         M = M*(spcM(NO2_pos,rv(NO2_pos))/(spcM(NO2_pos,rv(NO2_pos)) + bac_Ks(ex(e),2)));
-%                     end
-%                     if ne(bac_Ks(ex(e),3),0)
-%                         M = M*(spcM(O2_pos,rv(O2_pos))/(spcM(O2_pos,rv(O2_pos)) + bac_Ks(ex(e),3)));
-%                     end
-%                     
-%                     M = M*spcM(Glu_pos,rv(Glu_pos))/(spcM(Glu_pos,rv(Glu_pos)) + bac_Ks(ex(e),1));
-
+                    % compute the rates for each bacteria now
                     if ne(bac_Ks(ex(e),1),0)
-                        M = M*spcM(Glu_pos,rv(Glu_pos))/(spcM(Glu_pos,rv(Glu_pos)) + bac_Ks(ex(e),1));
-%                         use the proper concentration, corresponding to the proper state
+                        M = M*spcM(NH3_pos,rv(NH3_pos))/(spcM(NH3_pos,rv(NH3_pos)) + bac_Ks(ex(e),1));
+                    % use the proper concentration, corresponding to the proper state
                     end
                     if ne(bac_Ks(ex(e),2),0)
-                        M = M*(spcM(H2_pos,rv(H2_pos))/(spcM(H2_pos,rv(H2_pos)) + bac_Ks(ex(e),2)));
+                        M = M*(spcM(NO2_pos,rv(NO2_pos))/(spcM(NO2_pos,rv(NO2_pos)) + bac_Ks(ex(e),2)));
                     end
                     if ne(bac_Ks(ex(e),3),0)
-                        M = M*(spcM(AcH_pos,rv(AcH_pos))/(spcM(AcH_pos,rv(AcH_pos)) + bac_Ks(ex(e),3)));
+                        M = M*(spcM(O2_pos,rv(O2_pos))/(spcM(O2_pos,rv(O2_pos)) + bac_Ks(ex(e),3)));
                     end
+
+%                     M = M*spcM(Glu_pos,rv(Glu_pos))/(spcM(Glu_pos,rv(Glu_pos)) + bac_Ks(ex(e),1));
+
+%                     if ne(bac_Ks(ex(e),1),0)
+%                         M = M*spcM(Glu_pos,rv(Glu_pos))/(spcM(Glu_pos,rv(Glu_pos)) + bac_Ks(ex(e),1));
+%                     % use the proper concentration, corresponding to the proper state
+%                     end
+%                     if ne(bac_Ks(ex(e),2),0)
+%                         M = M*(spcM(H2_pos,rv(H2_pos))/(spcM(H2_pos,rv(H2_pos)) + bac_Ks(ex(e),2)));
+%                     end
+%                     if ne(bac_Ks(ex(e),3),0)
+%                         M = M*(spcM(AcH_pos,rv(AcH_pos))/(spcM(AcH_pos,rv(AcH_pos)) + bac_Ks(ex(e),3)));
+%                     end
+
                     mu = bac_mu_max(ex(e))*M - bac_maint(ex(e));
                     
                     if mu > 0  % the cell grows
