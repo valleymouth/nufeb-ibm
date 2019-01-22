@@ -36,47 +36,68 @@ out_integTime(0, R, 0,PathOutput); % see comments there
 SS = 2*Tol;
 % SS= 0;
 while i< nTBac
+    [NRVbac, NRV, dNRV, ~, ~, ~, ~] = my_kinetics(R);  % update the rates
+    NRVliq = NRV(1:numSt);
+    dNRVliq = dNRV(1:numSt);
     j = 1;
-    while SS > Tol
-        % solving the diffusion reaction here
-        %        
-        
-        U =  U + A * U + BB2 * Sbc_Dir + dT*BB3*(1000)*NRVliq;
-       
-        U = (U > 0).*U;
-        R.Sxy.StVLiq2 = U/1000;
-        
+    tol = 1e-15;
+    fx = A * U + BB2 * Sbc_Dir + dT*BB3*(1000)*NRVliq;
+    while ~all(abs(fx(:)) < tol) & j < 100
+        dU = -(A + diag(dT*BB3*(1000)*dNRVliq)) \ fx;
+        U = U + dU;
+        fx = A * U + BB2 * Sbc_Dir + dT*BB3*(1000)*NRVliq;
         j = j + 1;
-        
-         if mod(j,100) == 0 % updated every 100 diffusion steps
-            [NRVbac, NRV, ~, ~, ~, ~] = my_kinetics(R);  % update the rates
-            NRVliq = NRV(1:numSt);
-            R.rm.NRVliq = NRVliq;
-            NRVgas = NRV(numSt+1:end); R.rm.NRVgas = NRVgas;
-            R.rm.NRVbac = NRVbac;
-            V = V + 100 * dT*NRVgas;  R.Sxy.StVGas = V;
-            W = W + 100* dT*NRVbac; R.bac.bac_m = W; % updating biomass concentration
-            R.Sxy.StVLiq = [U/1000; V];
-        end
-
-        SS = max(abs(U - U0)./U0);
-        
-        U0 = U;
-        if j > dT_bac/dT
-            fprintf('no steady state diffusion')
-            return
-        end
-        
     end
+
+    R.rm.NRVliq = NRVliq;
+    NRVgas = NRV(numSt+1:end); R.rm.NRVgas = NRVgas;
+    R.rm.NRVbac = NRVbac;
+    V = V + 100 * dT*NRVgas;  R.Sxy.StVGas = V;
+    W = W + 100* dT*NRVbac; R.bac.bac_m = W; % updating biomass concentration
+    R.Sxy.StVLiq = [U/1000; V];
+
+%     j = 1;
+%     while SS > Tol
+%         % solving the diffusion reaction here
+%         %        
+%         
+%         U =  U + A * U + BB2 * Sbc_Dir + dT*BB3*(1000)*NRVliq;
+%        
+%         U = (U > 0).*U;
+%         R.Sxy.StVLiq2 = U/1000;
+%         
+%         j = j + 1;
+%         
+%          if mod(j,100) == 0 % updated every 100 diffusion steps
+%             [NRVbac, NRV, dNRV, ~, ~, ~, ~] = my_kinetics(R);  % update the rates
+%             NRVliq = NRV(1:numSt);
+%             dNRVliq = dNRV(1:numSt);
+%             R.rm.NRVliq = NRVliq;
+%             NRVgas = NRV(numSt+1:end); R.rm.NRVgas = NRVgas;
+%             R.rm.NRVbac = NRVbac;
+%             V = V + 100 * dT*NRVgas;  R.Sxy.StVGas = V;
+%             W = W + 100* dT*NRVbac; R.bac.bac_m = W; % updating biomass concentration
+%             R.Sxy.StVLiq = [U/1000; V];
+%         end
+% 
+%         SS = max(abs(U - U0)./U0);
+%         
+%         U0 = U;
+%         if j > dT_bac/dT
+%             fprintf('no steady state diffusion')
+%             return
+%         end
+%         
+%     end
   
-    SS = 2 * Tol;
-    dT_bac = dT_bac - j * dT;
+%     SS = 2 * Tol;
+%     dT_bac = dT_bac - j * dT;
     R = massBal( U/1000, V, W, R); % update the reaction matrices - for next diffusion step
     V = V + dT_bac*R.rm.NRVgas;  % update of solubles concentrations after biomass growth
     W = W + dT_bac*R.rm.NRVbac; % update of bacteria mass after biomass growth
     NRVliq = R.rm.NRVliq;
     dT_bac = R.Sxy.dT_bac; % adjusting time for division
-%      R = boundary(R, dT_bac, 1);  % updating the Dirichlet boundary condition for the diffusion-reaction
+%     R = boundary(R, dT_bac, 1);  % updating the Dirichlet boundary condition for the diffusion-reaction
     
     fprintf('>>>> Current simulation time is %.1f hours.',dT_bac*i)
     if mod(i,dT_Print/dT_bac) == 0

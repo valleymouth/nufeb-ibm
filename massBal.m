@@ -19,7 +19,7 @@ R.bac.bac_m = X; % and the bacteria - molar
 % X - molar concentration of biomass (all bacteria)
 
 
-[NRVbac, NRV, R.Sxy.pH, R.Sxy.DGcat, R.Sxy.DGan, Df,spcM] = my_kinetics(R);
+[NRVbac, NRV, ~, R.Sxy.pH, R.Sxy.DGcat, R.Sxy.DGan, Df,spcM] = my_kinetics(R);
 rm = R.rm;
 % update the difusion coefficients using the correction computed above
 Diff = R.kTr.Diffwater.*kron(Df, ones(St.numStVLiq2,1));
